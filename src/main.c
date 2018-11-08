@@ -3,11 +3,9 @@
 #include <stddef.h>
 #include <errno.h>
 
+#include "alloc.h"
+#include "grow-array.h"
 #include "k.h"
-
-struct ctx state = {
-    .env = 0
-};
 
 int main(int argc, const char **argv) {
     if (argc != 2) {
@@ -22,17 +20,21 @@ int main(int argc, const char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    char *line = NULL;
-    size_t linecap = 0;
-    int linelen = 0;
-    while((linelen = getline(&line, &linecap, fp)) != -1) {
-        if (linelen && (line[linelen-1] == '\n' || line[linelen-1] == '\r'))
-            line[--linelen] = '\0';
-        printf("%s\n", line);
+    char *content = 0;
+    uint32_t len = 0;
+    uint32_t offset = 0;
+    while (true) {
+        content = grow_array(content, &len, (size_t)len + 256);
+        uint32_t n = (uint32_t) fread(content + offset, 1, len - offset, fp);
+        if (n < len - offset) {
+            content[offset + n] = '\0';
+            break;
+        }
+        offset += n;
     }
-    
-    free(line);
-    fclose(fp);
 
-    return k(&state);
+    fwrite(content, len, 1, stdout);
+    free(content);
+    fclose(fp);
+    return EXIT_SUCCESS;
 }

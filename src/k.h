@@ -5,8 +5,9 @@
 /* pointer */
 typedef uintptr_t ptr;
 
-struct ctx {
+typedef struct keel_ctx {
+    uint8_t* src;
     ptr env;
-};
+} keel_ctx;
 
-int k(struct ctx* state);
+int k(struct keel_ctx* state);
