@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "k.h"
 
-int k(struct keel_ctx* state) {
-    printf("The content is :\n%s", state->src);
+int k(struct keel_ctx* ctx) {
+    fwrite(ctx->src, ctx->len, 1, stdout);
     return 0;
 }

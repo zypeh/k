@@ -33,7 +33,11 @@ int main(int argc, const char **argv) {
         offset += n;
     }
 
-    fwrite(content, len, 1, stdout);
+    keel_ctx ctx;
+    ctx.src = (uint8_t *) content;
+    ctx.len = len;
+    k(&ctx);
+
     free(content);
     fclose(fp);
     return EXIT_SUCCESS;
