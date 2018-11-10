@@ -5,7 +5,7 @@
 
 #include "alloc.h"
 #include "grow-array.h"
-#include "k.h"
+#include "1-scan.h"
 
 int main(int argc, const char **argv) {
     if (argc != 2) {
@@ -33,10 +33,15 @@ int main(int argc, const char **argv) {
         offset += n;
     }
 
-    keel_ctx ctx;
-    ctx.src = (uint8_t *) content;
-    ctx.len = len;
-    k(&ctx);
+    srcFile src = {
+        .filepath = (uint8_t *) argv[1],
+        .buf = (uint8_t *) content,
+        .len = len
+    };
+
+    srcScanner sc;
+    new_scanner(&sc, &src);
+    while (scan(&sc) != 0) {};
 
     free(content);
     fclose(fp);
