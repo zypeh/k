@@ -39,9 +39,41 @@ int scan(srcScanner* scanner) {
     }
 
     uint8_t* src = scanner->src->buf;
-    uint8_t c = src[scanner->pos];
+    uint32_t c = (uint32_t)src[scanner->pos];
 
-    switch ((uint32_t)c) { /* COMMENT_NEEDED: what is this sorcery ? */
+    switch (c >> 6) {
+        // c is ordinary ASCII, skip processing
+        case 0: 
+        case 1:
+        break;
+
+        // c is longer than a byte
+        case 3:
+            if ((c >> 5) == 0b110)  {
+                // c is 2-bytes long
+                c = (c << 8) | src[++scanner->pos]; 
+            } else if ((c >> 4) == 0b1110) {
+                // c is 3-bytes long
+                c = (c << 8) | src[++scanner->pos]; 
+                c = (c << 8) | src[++scanner->pos];
+            } else if ((c >> 3) == 0b11110) {
+                // c is 4-bytes long
+                c = (c << 8) | src[++scanner->pos]; 
+                c = (c << 8) | src[++scanner->pos];
+                c = (c << 8) | src[++scanner->pos]; 
+            } else {
+                // unreachable
+            }
+        break;
+
+        case 2:
+            // TODO: error handling
+            // this should not happen with well-formed utf-8 files
+        default:
+            // unreachable
+    }
+
+    switch (c) {
         case LINEFEED:
         case LINESEPARATOR:
         case PARAGRAPHSEPARATOR:
